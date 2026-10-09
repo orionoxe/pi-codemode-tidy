@@ -1,6 +1,6 @@
 {
   "name": "pi-codemode-tidy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tidy transcript rendering for Pi's codemode tool: summarized nested calls, readable JSON output, and always-visible script errors — Ctrl+O expands the original view",
   "type": "module",
   "files": [
