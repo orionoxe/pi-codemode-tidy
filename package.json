@@ -1,0 +1,52 @@
+{
+  "name": "pi-codemode-tidy",
+  "version": "0.1.0",
+  "description": "Tidy transcript rendering for Pi's codemode tool: summarized nested calls, readable JSON output, and always-visible script errors — Ctrl+O expands the original view",
+  "type": "module",
+  "files": [
+    "extensions",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "pi-package",
+    "pi",
+    "extension",
+    "codemode",
+    "tool-rendering",
+    "transcript",
+    "tui"
+  ],
+  "license": "MIT",
+  "pi": {
+    "extensions": [
+      "./extensions/index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.1.0",
+    "@earendil-works/pi-tui": "^1.1.0",
+    "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "tsc --noEmit",
+    "pack": "npm pack",
+    "prepublishOnly": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orionoxe/pi-codemode-tidy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/orionoxe/pi-codemode-tidy/issues"
+  },
+  "homepage": "https://github.com/orionoxe/pi-codemode-tidy#readme"
+}
