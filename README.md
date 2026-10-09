@@ -54,11 +54,13 @@ and raw output included.
 
 - **Script** collapses to one line (`6 lines`); expand to read it.
 - **Nested calls** become one summary row each — tool name, main argument, then limits and
-  offsets — instead of raw argument JSON. Earlier calls fold away past 8 rows.
+  offsets — instead of raw argument JSON. Earlier successful calls fold away past 8 rows;
+  running, failed, and cancelled calls remain visible.
 - **Output** previews 6 wrapped lines. Compact JSON is split at escaped `\n` and `\t`, so long
   payloads read as text instead of one wrapping blob; literal backslashes survive untouched.
-- **Errors stay on top**: `Script error:` and failing call rows render above the preview, never
-  behind it. Long output keeps its `Full output: /tmp/...` path.
+- **Errors stay visible**: script errors appear above the preview without a line cap. Failed
+  calls remain visible with their full recorded error, even when earlier successful calls fold
+  away. Long output keeps its `Full output: /tmp/...` path.
 - **Display only**: the tool result the model sees is never rewritten, and the expanded view is
   Pi's own renderer, not a reimplementation.
 
@@ -78,7 +80,8 @@ Then `/reload`.
 
 ## Requirements
 
-Pi with the `registerToolRenderer` extension API (Pi 0.84+). Developed and tested against Pi 1.1.0.
+Tested against Pi 1.1.0. Requires the `registerToolRenderer` extension API and the built-in
+`codemode` renderers. Other Pi versions have not been verified.
 
 ## Development
 

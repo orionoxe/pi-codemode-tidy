@@ -10,7 +10,7 @@
  */
 import type { CodemodeToolDetails, ExtensionAPI, ToolRenderers } from "@earendil-works/pi-coding-agent";
 import { keyHint, truncateToVisualLines } from "@earendil-works/pi-coding-agent";
-import { Container, Spacer, TruncatedText, truncateToWidth, type Component } from "@earendil-works/pi-tui";
+import { Container, Spacer, Text, TruncatedText, truncateToWidth, type Component } from "@earendil-works/pi-tui";
 
 type RenderCall = NonNullable<ToolRenderers["renderCall"]>;
 type RenderResult = NonNullable<ToolRenderers["renderResult"]>;
@@ -19,7 +19,6 @@ type Color = Parameters<Theme["fg"]>[0];
 type Call = CodemodeToolDetails["calls"][number];
 
 const PREVIEW_LINES = 6;
-const ERROR_LINES = 5;
 const CALL_ROWS = 8;
 const ARG_COLS = 60;
 const SCRIPT_HEADER = /^Script (completed|failed)\nWall time [\d.]+ seconds\nOutput:\n$/;
@@ -126,9 +125,6 @@ function callRow(call: Call, theme: Theme): string {
 	if (args) parts.push(theme.fg("muted", args));
 	if (call.durationMs !== undefined) parts.push(theme.fg("dim", formatDuration(call.durationMs)));
 	if (call.cost !== undefined) parts.push(theme.fg("dim", formatCost(call.cost)));
-	if (call.status === "error" && call.error) {
-		parts.push(theme.fg("error", truncateToWidth(call.error.split("\n")[0], 32)));
-	}
 	return parts.join(" ");
 }
 
@@ -202,21 +198,24 @@ function compactResult(
 	const texts = result.content.flatMap((item) => (item.type === "text" ? [item.text] : []));
 	const body = (SCRIPT_HEADER.test(texts[0] ?? "") ? texts.slice(1) : texts).join("\n");
 	const normalized = `\n${body}`;
-	const at = normalized.lastIndexOf(SCRIPT_ERROR);
+	const at = context.isError ? normalized.lastIndexOf(SCRIPT_ERROR) : -1;
 	const errorText = at >= 0 ? normalized.slice(at + SCRIPT_ERROR.length) : "";
 	const output = at >= 0 ? normalized.slice(1, at) : body;
 	const children: Component[] = [];
 
 	if (errorText) {
 		children.push(new TruncatedText(theme.fg("error", theme.bold("Script error")), 0, 0));
-		children.push(new Preview(styledLines(errorText, "error", theme), ERROR_LINES, (n) => expandHint(theme, n, "lines")));
+		children.push(new Text(styledLines(errorText, "error", theme), 0, 0));
 	}
 	if (calls.length > 0) {
-		const shown = calls.slice(-CALL_ROWS);
+		const shown = calls.filter((call, index) => call.status !== "ok" || index >= calls.length - CALL_ROWS);
 		if (shown.length < calls.length) {
 			children.push(new TruncatedText(moreHint(theme, `... (${calls.length - shown.length} earlier calls`), 0, 0));
 		}
-		for (const call of shown) children.push(new TruncatedText(callRow(call, theme), 0, 0));
+		for (const call of shown) {
+			children.push(new TruncatedText(callRow(call, theme), 0, 0));
+			if (call.error) children.push(new Text(styledLines(call.error, "error", theme), 0, 0));
+		}
 		const priced = calls.filter((call) => call.cost !== undefined);
 		if (priced.length > 1) {
 			const total = priced.reduce((sum, call) => sum + (call.cost ?? 0), 0);

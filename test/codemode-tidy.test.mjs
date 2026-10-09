@@ -162,8 +162,26 @@ const badLines = renderText(
 assert.match(badLines.slice(0, 2).join("\n"), /Script error/);
 assert.ok(badLines.slice(0, 3).some((l) => l.includes("missing module")), "error message visible at the top");
 assert.ok(badLines.some((l) => l.includes("noise")), "output preview still shown");
-assert.ok(badLines.some((l) => l.includes("✗") && l.includes("Boom")), "failed call row shows its error");
+assert.ok(badLines.some((l) => l.includes("✗")), "failed call row is visible");
+assert.ok(badLines.some((l) => l.includes("Boom")), "failed call error is visible");
 assertFits(renderers.renderResult(badFixture, { expanded: false, isPartial: false }, theme, ctx({ isError: true })));
+
+// An early failure must survive the call-row budget and long argument summaries.
+const earlyFailure = {
+	...fixture,
+	details: { calls: [{ ...calls[0], status: "error", args: JSON.stringify({ path: "长路径/".repeat(80) }), error: "EARLY_FAILURE\nDETAIL_AT_END" }, ...manyCalls.details.calls] },
+};
+const earlyComponent = renderers.renderResult(earlyFailure, { expanded: false, isPartial: false }, theme, ctx());
+assert.match(renderText(earlyComponent), /EARLY_FAILURE/);
+assert.match(renderText(earlyComponent), /DETAIL_AT_END/);
+assertFits(earlyComponent);
+const longError = {
+	...badFixture,
+	content: [{ type: "text", text: "Script error:\n" + "stack frame\n".repeat(20) + "FINAL_ERROR_REASON" }],
+};
+assert.match(renderText(renderers.renderResult(longError, { expanded: false, isPartial: false }, theme, ctx({ isError: true }))), /FINAL_ERROR_REASON/);
+const ordinaryMarker = { ...fixture, content: [{ type: "text", text: "Script error:\nordinary output" }] };
+assert.ok(!renderText(renderers.renderResult(ordinaryMarker, { expanded: false, isPartial: false }, theme, ctx())).includes("Script error\n"), "successful output is not misclassified as a script error");
 
 // --- expanded delegates to Pi's original renderer -------------------------
 const withNative = resolver("codemode", () => codemodeRenderers);
