@@ -102,7 +102,7 @@ function summarizeArgs(raw: string): string {
 	for (const key of MAIN_ARGS) {
 		const value = args[key];
 		if (typeof value === "string" && value.trim()) {
-			parts.push(truncateToWidth(value.trim().replace(/\s+/g, " "), ARG_COLS));
+			parts.push(truncateToWidth(value.trim().replace(/\s+/g, " "), ARG_COLS).replaceAll("\x1b[0m", ""));
 			delete args[key];
 			break;
 		}
@@ -111,7 +111,7 @@ function summarizeArgs(raw: string): string {
 		if (parts.length >= 3) break;
 		if (typeof value === "number" || typeof value === "boolean") parts.push(`${key}=${value}`);
 		else if (typeof value === "string" && value.trim() && key !== "content") {
-			parts.push(`${key}=${truncateToWidth(value.trim(), 16)}`);
+			parts.push(`${key}=${truncateToWidth(value.trim(), 16).replaceAll("\x1b[0m", "")}`);
 		} else if (Array.isArray(value)) parts.push(`${key}[${value.length}]`);
 		else if (value && typeof value === "object") parts.push(`${key}{…}`);
 	}

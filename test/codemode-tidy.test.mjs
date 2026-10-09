@@ -106,6 +106,22 @@ assert.match(resultText, /offset=1/);
 assert.equal((resultText.match(/✓/g) ?? []).length, 4, "one row per nested call");
 assert.match(resultText, /4ms/);
 assert.ok(!resultText.includes("Script completed"), "header stripped");
+const longArgFixture = {
+	...fixture,
+	details: {
+		calls: [
+			{ ...calls[0], args: JSON.stringify({ path: "node_modules/@earendil-works", pattern: "function truncateToVisualLines" }) },
+			{ ...calls[0], args: JSON.stringify({ path: "long-path/".repeat(20) }) },
+		],
+	},
+};
+const longArgLines = renderers
+	.renderResult(longArgFixture, { expanded: false, isPartial: false }, theme, ctx())
+	.render(200);
+assert.ok(
+	longArgLines.every((line) => !line.includes("\x1b[0m")),
+	"argument truncation must not reset the tool shell background",
+);
 const lines = resultText.split("\n");
 const alphaIdx = lines.findIndex((l) => l.includes("alpha"));
 const betaIdx = lines.findIndex((l) => l.includes("beta"));
